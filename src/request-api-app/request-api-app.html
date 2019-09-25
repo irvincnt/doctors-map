@@ -44,16 +44,19 @@
 
     <iron-ajax
       id="elajax"
-      url="https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/19.4414114/-99.184203/6"
+      loquesea="hola"
+      url="https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/{{latitude}}/{{longitude}}/{{proximity}}"
       handle-as="json"
       loading="{{cargando}}"
       last-response="{{response}}">
     </iron-ajax>
 
     <div class="content">
+      <p> https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/{{latitude}}/{{longitude}}/{{proximity}} </p>
       <div class="content-search">
-        <input type="text" name="" id="">
+        <input type="text" name="" placeholder="proximity" value="{{proximity::input}}">
         <button on-click="searchData">Buscar</button>
+        <button on-click="loquesea">click</button>
       </div>
       <template is=dom-if if={{cargando}}>
         <paper-spinner
@@ -89,6 +92,18 @@
       static get properties() {
         return {
           response: Object,
+          latitude: {
+            type: String,
+            value: '19.4414114'
+          },
+          longitude: {
+            type: String,
+            value: '-99.184203'
+          },
+          proximity: {
+            type: String,
+            value: '5',
+          },
           cargando: Boolean,
           prop1: {
             type: String,
@@ -99,6 +114,9 @@
 
       searchData () {
         this.$.elajax.generateRequest();
+      }
+      loquesea () {
+        console.log('proximity', this.proximity)
       }
     }
 
