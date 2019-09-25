@@ -1,13 +1,70 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="request-api-app">
   <template>
     <style>
-      :host {
-        display: block;
+      .content {
+        width: 80%;
+        margin: 0 auto;
+      }
+      .content-search {
+        display: flex;
+        margin-bottom: 1rem;
+        justify-content: flex-end;
+      }
+      .table {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .table td, .table th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      .table tr:nth-child(even){background-color: #f2f2f2;}
+
+      .table tr:hover {background-color: #ddd;}
+
+      .table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: white;
       }
     </style>
-    <h2>Hello [[prop1]]!</h2>
+
+    <iron-ajax
+      id="elajax"
+      url="https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/19.4414114/-99.184203/6"
+      handle-as="json"
+      last-response="{{response}}">
+    </iron-ajax>
+
+    <div class="content">
+      <div class="content-search">
+        <input type="text" name="" id="">
+        <button on-click="searchData">Buscar</button>
+      </div>
+      <table class="table">
+        <tr>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th>Giro</th>
+        </tr>
+        <template is="dom-repeat" items="[[response.file.data]]">
+          <tr>
+            <td>[[index]] - [[item.nombre]]</td>
+            <td>[[item.especialidad]]</td>
+            <td>[[item.giro]]</td>
+          </tr>
+        </template>
+      </table>
+    </div>
+
   </template>
 
   <script>
@@ -19,11 +76,16 @@
       static get is() { return 'request-api-app'; }
       static get properties() {
         return {
+          response: Object,
           prop1: {
             type: String,
             value: 'request-api-app'
           }
         };
+      }
+
+      searchData () {
+        this.$.elajax.generateRequest();
       }
     }
 
