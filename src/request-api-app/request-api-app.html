@@ -1,9 +1,14 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
 <dom-module id="request-api-app">
   <template>
     <style>
+      .center {
+        display: table;
+        margin: 0 auto;
+      }
       .content {
         width: 80%;
         margin: 0 auto;
@@ -41,6 +46,7 @@
       id="elajax"
       url="https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/19.4414114/-99.184203/6"
       handle-as="json"
+      loading="{{cargando}}"
       last-response="{{response}}">
     </iron-ajax>
 
@@ -49,34 +55,41 @@
         <input type="text" name="" id="">
         <button on-click="searchData">Buscar</button>
       </div>
-      <table class="table">
-        <tr>
-          <th>Nombre</th>
-          <th>Especialidad</th>
-          <th>Giro</th>
-        </tr>
-        <template is="dom-repeat" items="[[response.file.data]]">
+      <template is=dom-if if={{cargando}}>
+        <paper-spinner
+          class="center"
+          alt="Cargando el usuario..."
+          active="[[cargando]]">
+        </paper-spinner>
+      </template>
+
+      <template is="dom-if" if="{{response}}">
+        <table class="table">
           <tr>
-            <td>[[index]] - [[item.nombre]]</td>
-            <td>[[item.especialidad]]</td>
-            <td>[[item.giro]]</td>
+            <th>Nombre</th>
+            <th>Especialidad</th>
+            <th>Giro</th>
           </tr>
-        </template>
-      </table>
+          <template is="dom-repeat" items="[[response.file.data]]">
+            <tr>
+              <td>[[index]] - [[item.nombre]]</td>
+              <td>[[item.especialidad]]</td>
+              <td>[[item.giro]]</td>
+            </tr>
+          </template>
+        </table>
+      </template>
     </div>
 
   </template>
 
   <script>
-    /**
-     * @customElement
-     * @polymer
-     */
     class RequestApiApp extends Polymer.Element {
       static get is() { return 'request-api-app'; }
       static get properties() {
         return {
           response: Object,
+          cargando: Boolean,
           prop1: {
             type: String,
             value: 'request-api-app'
