@@ -1,0 +1,6 @@
+{
+  "name": "request-api",
+  "short_name": "request-api",
+  "start_url": "/",
+  "display": "standalone"
+}
