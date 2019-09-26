@@ -40,6 +40,20 @@
         background-color: #4CAF50;
         color: white;
       }
+      .pagination a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color .3s;
+      }
+
+      .pagination a.active {
+        background-color: dodgerblue;
+        color: white;
+      }
+
+      .pagination a:hover:not(.active) {background-color: #ddd;}
     </style>
 
     <iron-ajax
@@ -74,6 +88,7 @@
         <button on-click="filterData">Filtrar</button>
         <button on-click="resetFilters">Reset</button>
       </div>
+      
       <template is=dom-if if={{cargando}}>
         <paper-spinner
           class="center"
@@ -82,6 +97,21 @@
         </paper-spinner>
       </template>
 
+      <div class="content-search">
+        <div class="pagination">
+          <a href="#" on-click="firstPage">Inicio</a>
+          <a href="#" on-click="previousPage">&laquo;</a>
+          <a href="#">1</a>
+          <a class="active" href="#">2</a>
+          <a href="#">3</a>
+          <a href="#">4</a>
+          <a href="#">5</a>
+          <a href="#">6</a>
+          <a href="#" on-click="nextPage">&raquo;</a>
+          <a href="#" on-click="lastPage">Final</a>
+        </div>
+      </div>
+    
       <template is="dom-if" if="{{response}}">
         <table class="table">
           <tr>
@@ -123,6 +153,18 @@
             type: String,
             value: '5',
           },
+          currentPage: {
+            type: Number,
+            value: 1
+          },
+          numberPerPage: {
+            type: Number,
+            value: 10
+          },
+          numberOfPages: {
+            type: Number,
+            value: 0
+          },
           searchName: String,
           cargando: Boolean,
         };
@@ -158,8 +200,11 @@
         this.groupBy(data)
         this.data = data
         this.dataCopy = data
+        console.log('getNumberOfPages', this.getNumberOfPages())
+        this.numberOfPages = this.getNumberOfPages()
       }
 
+      
       groupBy (collection) {
         let group = []
         collection.forEach((item) => {
@@ -175,6 +220,38 @@
       onChange (e) {
         this.filter = e.target.value
       }
+
+      getNumberOfPages () {
+        return Math.ceil(this.data.length / this.numberPerPage);
+      }
+
+      nextPage() {
+        this.currentPage += 1;
+        this.loadList();
+      }
+
+      previousPage() {
+        this.currentPage -= 1;
+        this.loadList();
+      }
+
+      firstPage() {
+        this.currentPage = 1;
+        this.loadList();
+      }
+
+      lastPage() {
+        this.currentPage = this.numberOfPages;
+        this.loadList();
+      }
+
+      loadList() {
+        let begin = ((this.currentPage - 1) * this.numberPerPage);
+        const end = begin + this.numberPerPage;
+
+        this.data = this.dataCopy.slice(begin, end);
+    }
+
     }
 
     window.customElements.define(RequestApiApp.is, RequestApiApp);
