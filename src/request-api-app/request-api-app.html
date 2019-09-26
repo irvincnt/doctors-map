@@ -48,16 +48,28 @@
       url="https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/{{latitude}}/{{longitude}}/{{proximity}}"
       handle-as="json"
       loading="{{cargando}}"
-      last-response="{{response}}">
+      last-response="{{response}}"
+      on-response="respuestaRecibida">
     </iron-ajax>
 
     <div class="content">
       <p> https://pxnlzd5xje.execute-api.us-east-1.amazonaws.com/dev/directory/getJson/multi/{{latitude}}/{{longitude}}/{{proximity}} </p>
       <div class="content-search">
+        <input type="text" name="" placeholder="Latitud" value="{{latitude::input}}">
+        <input type="text" name="" placeholder="longitud" value="{{longitude::input}}">
         <input type="text" name="" placeholder="proximity" value="{{proximity::input}}">
         <button on-click="searchData">Buscar</button>
-        <button on-click="loquesea">click</button>
+        <button on-click="filterData">Filtrar</button>
+        <button on-click="loquesea">loquesea</button>
       </div>
+      <template is=dom-if if={{specialties}}>
+        <select name="specialties" id="specialties">
+          <option>Selecciona una especialidad</option>
+          <template is=dom-repeat items={{specialties}}>
+            <option value="2">[[item]]</option>
+          </template>
+        </select>
+      </template>
       <template is=dom-if if={{cargando}}>
         <paper-spinner
           class="center"
@@ -73,7 +85,7 @@
             <th>Especialidad</th>
             <th>Giro</th>
           </tr>
-          <template is="dom-repeat" items="[[response.file.data]]">
+          <template is="dom-repeat" items="[[data]]">
             <tr>
               <td>[[index]] - [[item.nombre]]</td>
               <td>[[item.especialidad]]</td>
@@ -83,7 +95,6 @@
         </table>
       </template>
     </div>
-
   </template>
 
   <script>
@@ -92,6 +103,8 @@
       static get properties() {
         return {
           response: Object,
+          data: Array,
+          specialties: Array,
           latitude: {
             type: String,
             value: '19.4414114'
@@ -105,18 +118,34 @@
             value: '5',
           },
           cargando: Boolean,
-          prop1: {
-            type: String,
-            value: 'request-api-app'
-          }
         };
       }
 
       searchData () {
         this.$.elajax.generateRequest();
       }
-      loquesea () {
-        console.log('proximity', this.proximity)
+
+      filterData () {
+        console.log('data in filter', this.data)
+      }
+
+      respuestaRecibida (e, request) {
+        const {file: { data }} = request.response
+        console.log('respuestaRecibida data', data);
+        this.groupBy(data)
+        this.data = data
+      }
+
+      groupBy (collection) {
+        let group = []
+        collection.forEach((item) => {
+          let exists = group.find(itemGroup => itemGroup === item.especialidad)
+          if(!exists){
+            group.push(item.especialidad)
+          }
+        });
+
+        this.specialties = group
       }
     }
 
