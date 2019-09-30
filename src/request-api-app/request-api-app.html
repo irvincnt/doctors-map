@@ -101,12 +101,9 @@
         <div class="pagination">
           <a href="#" on-click="firstPage">Inicio</a>
           <a href="#" on-click="previousPage">&laquo;</a>
-          <a href="#">1</a>
-          <a class="active" href="#">2</a>
-          <a href="#">3</a>
-          <a href="#">4</a>
-          <a href="#">5</a>
-          <a href="#">6</a>
+          <template is="dom-repeat" items="[[paginationList]]">
+            <a on-click="openPage">[[index]]</a>
+          </template>
           <a href="#" on-click="nextPage">&raquo;</a>
           <a href="#" on-click="lastPage">Final</a>
         </div>
@@ -140,6 +137,7 @@
           data: Array,
           dataCopy: Array,
           specialties: Array,
+          paginationList: Array,
           filter: String,
           latitude: {
             type: String,
@@ -222,7 +220,9 @@
       }
 
       getNumberOfPages () {
-        return Math.ceil(this.data.length / this.numberPerPage);
+        let total =  Math.ceil(this.data.length / this.numberPerPage);
+        this.paginationList = [...Array(total).keys()]
+        return total
       }
 
       nextPage() {
@@ -250,7 +250,13 @@
         const end = begin + this.numberPerPage;
 
         this.data = this.dataCopy.slice(begin, end);
-    }
+      }
+
+      openPage (e) {
+        const {index} = e.model
+        this.currentPage = index + 1
+        this.loadList();
+      }
 
     }
 
