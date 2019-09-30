@@ -109,14 +109,16 @@
         </div>
       </div>
     
-      <template is="dom-if" if="{{response}}">
+      <template
+        is="dom-if"
+        if="{{response}}">
         <table class="table">
           <tr>
             <th>Nombre</th>
             <th>Especialidad</th>
             <th>Giro</th>
           </tr>
-          <template is="dom-repeat" items="[[data]]">
+          <template is="dom-repeat" items="[[viewInformation]]">
             <tr>
               <td>[[index]] - [[item.nombre]]</td>
               <td>[[item.especialidad]]</td>
@@ -134,8 +136,9 @@
       static get properties() {
         return {
           response: Object,
-          data: Array,
-          dataCopy: Array,
+          allDataResponse: Array,
+          allDataFilters: Array,
+          viewInformation: Array,
           specialties: Array,
           paginationList: Array,
           filter: String,
@@ -168,41 +171,45 @@
         };
       }
 
+      respuestaRecibida (e, request) {
+        const {file: { data }} = request.response
+        this.groupBy(data)
+        this.allDataResponse = data
+        this.viewInformation = data
+        this.allDataFilters = data
+        this.getNumberOfPages()
+        this.loadList()
+      }
+
       searchData () {
         this.$.elajax.generateRequest();
       }
 
       filterData () {
+        let responseSearch
+        let newData = []
         if (this.filter) {
-          const responseSearch = this.dataCopy.filter(item => item.especialidad === this.filter)
-          this.data = responseSearch
+          responseSearch = this.allDataResponse.filter(item => item.especialidad === this.filter)
         }
 
         if (this.searchName) {
-          let newData = []
-          this.dataCopy.forEach(item => {
+          this.allDataResponse.forEach(item => {
             if(item.nombre.includes(this.searchName)) newData.push(item)
           })
-          this.data = newData
         }
+
+        this.allDataFilters = [...responseSearch, ...newData]
+        this.getNumberOfPages()
+        this.loadList()
       }
 
       resetFilters () {
-        this.data = this.dataCopy
+        this.viewInformation = this.allDataResponse
+        this.allDataFilters = this.allDataResponse
         this.filter = null
         this.searchName = null
       }
-
-      respuestaRecibida (e, request) {
-        const {file: { data }} = request.response
-        this.groupBy(data)
-        this.data = data
-        this.dataCopy = data
-        console.log('getNumberOfPages', this.getNumberOfPages())
-        this.numberOfPages = this.getNumberOfPages()
-      }
-
-      
+    
       groupBy (collection) {
         let group = []
         collection.forEach((item) => {
@@ -220,9 +227,9 @@
       }
 
       getNumberOfPages () {
-        let total =  Math.ceil(this.data.length / this.numberPerPage);
+        let total =  Math.ceil(this.allDataFilters.length / this.numberPerPage);
         this.paginationList = [...Array(total).keys()]
-        return total
+        this.numberOfPages = total
       }
 
       nextPage() {
@@ -248,8 +255,7 @@
       loadList() {
         let begin = ((this.currentPage - 1) * this.numberPerPage);
         const end = begin + this.numberPerPage;
-
-        this.data = this.dataCopy.slice(begin, end);
+        this.viewInformation = this.allDataFilters.slice(begin, end);
       }
 
       openPage (e) {
@@ -257,7 +263,6 @@
         this.currentPage = index + 1
         this.loadList();
       }
-
     }
 
     window.customElements.define(RequestApiApp.is, RequestApiApp);
