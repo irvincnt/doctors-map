@@ -77,7 +77,7 @@
       </div>
       <div class="content-search">
         <template is=dom-if if={{specialties}}>
-          <select name="specialties" id="specialties" on-change="onChange">
+          <select name="specialty" on-change="onChange">
             <option>Selecciona una especialidad</option>
             <template is=dom-repeat items={{specialties}}>
               <option value$="[[item]]">[[item]]</option>
@@ -107,6 +107,13 @@
           <a href="#" on-click="nextPage">&raquo;</a>
           <a href="#" on-click="lastPage">Final</a>
         </div>
+        <select name="numberPerPage" on-change="onChangesNumberOfPages">
+          <option>total de items</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
       </div>
     
       <template
@@ -141,7 +148,7 @@
           viewInformation: Array,
           specialties: Array,
           paginationList: Array,
-          filter: String,
+          specialty: String,
           latitude: {
             type: String,
             value: '19.4414114'
@@ -173,10 +180,12 @@
 
       respuestaRecibida (e, request) {
         const {file: { data }} = request.response
-        this.groupBy(data)
-        this.allDataResponse = data
-        this.viewInformation = data
-        this.allDataFilters = data
+        this.groupBySpecialities(data)
+        this.setProperties({
+          allDataResponse: data,
+          viewInformation: data,
+          allDataFilters: data
+        })
         this.getNumberOfPages()
         this.loadList()
       }
@@ -188,8 +197,8 @@
       filterData () {
         let responseSearch
         let newData = []
-        if (this.filter) {
-          responseSearch = this.allDataResponse.filter(item => item.especialidad === this.filter)
+        if (this.specialty) {
+          responseSearch = this.allDataResponse.filter(item => item.especialidad === this.specialty)
         }
 
         if (this.searchName) {
@@ -204,13 +213,16 @@
       }
 
       resetFilters () {
-        this.viewInformation = this.allDataResponse
-        this.allDataFilters = this.allDataResponse
-        this.filter = null
-        this.searchName = null
+        this.setProperties({
+          filter: null,
+          searchName: null,
+          allDataFilters: this.allDataResponse,
+        })
+        this.getNumberOfPages()
+        this.loadList()
       }
     
-      groupBy (collection) {
+      groupBySpecialities (collection) {
         let group = []
         collection.forEach((item) => {
           let exists = group.find(itemGroup => itemGroup === item.especialidad)
@@ -218,18 +230,30 @@
             group.push(item.especialidad)
           }
         });
-
-        this.specialties = group
+        this.setProperties({specialties: group})
       }
 
       onChange (e) {
-        this.filter = e.target.value
+        const {name} = e.target
+        this.setProperties({
+          [name]: e.target.value
+        })
+      }
+
+      onChangesNumberOfPages (e) {
+        const {name} = e.target
+        this.setProperties({
+          [name]: e.target.value
+        })
+        this.loadList();
       }
 
       getNumberOfPages () {
         let total =  Math.ceil(this.allDataFilters.length / this.numberPerPage);
-        this.paginationList = [...Array(total).keys()]
-        this.numberOfPages = total
+        this.setProperties({
+          numberOfPages: total,
+          paginationList: [...Array(total).keys()],
+        });
       }
 
       nextPage() {
